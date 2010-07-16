@@ -34,10 +34,11 @@ try {
 
     $client->login(
         new PhoenixBasicAuthentication(
-            $username,
-            $password
+            USERNAME,
+            PASSWORD
         )
     );
+    
     
     var_dump($client->whoAmI());
 
