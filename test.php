@@ -22,8 +22,6 @@ require_once SESSION_DIRECTORY . '/SessionFactory.php';
 // Added to .gitignore, contains the USERNAME, PASSWORD and PHOENIX_URL constants
 require_once 'conf/conf.php';
 
-$username = USERNAME;
-$password = PASSWORD;
 
 SessionFactory::setInstance(WebSession::getInstance());
 $session = SessionFactory::getInstance();
