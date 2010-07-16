@@ -26,7 +26,7 @@ require_once 'conf/conf.php';
 SessionFactory::setInstance(WebSession::getInstance());
 $session = SessionFactory::getInstance();
 
-// Just for testing
+// Just for testing.
 unset($_SESSION);
 
 try {
