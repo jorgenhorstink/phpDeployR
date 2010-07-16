@@ -28,17 +28,20 @@ $password = PASSWORD;
 SessionFactory::setInstance(WebSession::getInstance());
 $session = SessionFactory::getInstance();
 
+// Just for testing
 unset($_SESSION);
 
 try {
     $client = PhoenixClient::createHttpClient(PHOENIX_URL, $session);
 
-    $client->login(
-        new PhoenixBasicAuthentication(
-            USERNAME,
-            PASSWORD
-        )
-    );
+    if (!$client->isAuthenticated()) {
+        $client->login(
+            new PhoenixBasicAuthentication(
+                USERNAME,
+                PASSWORD
+            )
+        );
+    }
     
     
     var_dump($client->whoAmI());
