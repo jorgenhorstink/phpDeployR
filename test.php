@@ -18,7 +18,7 @@ require_once PHOENIX_DIRECTORY . '/PhoenixBasicAuthentication.php';
 require_once SESSION_DIRECTORY . '/WebSession.php';
 require_once SESSION_DIRECTORY . '/SessionFactory.php';
 
-// Added to .gitignore
+// Added to .gitignore, contains the USERNAME, PASSWORD and PHOENIX_URL constants
 require_once 'conf/conf.php';
 
 $username = USERNAME;
