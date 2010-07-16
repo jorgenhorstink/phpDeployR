@@ -3,6 +3,7 @@
 /**
  * @author Jorgen Horstink <mail@jorgenhorstink.nl>
  * @copyright Copyright (c) 2010, Jorgen Horstink
+ * @licency Apache License, Version 2.0
  */
 
 define('PHOENIX_DIRECTORY', 'classes/phoenix');
