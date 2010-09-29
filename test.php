@@ -14,7 +14,7 @@ set_include_path(get_include_path() . PATH_SEPARATOR . '/');
 
 //require_once PHOENIX_DIRECTORY . '/PhoenixSession.php';
 require_once PHOENIX_DIRECTORY . '/PhoenixClient.php';
-require_once PHOENIX_DIRECTORY . '/PhoenixBasicAuthentication.php';
+require_once PHOENIX_DIRECTORY . '/impl/PhoenixBasicAuthentication.php';
 
 require_once SESSION_DIRECTORY . '/WebSession.php';
 require_once SESSION_DIRECTORY . '/SessionFactory.php';
@@ -22,14 +22,16 @@ require_once SESSION_DIRECTORY . '/SessionFactory.php';
 // Added to .gitignore, contains the USERNAME, PASSWORD and PHOENIX_URL constants
 require_once 'conf/conf.php';
 
-
 SessionFactory::setInstance(WebSession::getInstance());
 $session = SessionFactory::getInstance();
 
 // Just for testing.
-unset($_SESSION);
+$session->removeNamespace('phoenix');
+$session->removeNamespace('phoenix_sessions');
+
 
 try {
+    // Injects a Session object to be able bind the current logged in user to the Client.
     $client = PhoenixClient::createHttpClient(PHOENIX_URL, $session);
 
     if (!$client->isAuthenticated()) {
@@ -40,34 +42,58 @@ try {
             )
         );
     }
-    
-    
-    var_dump($client->whoAmI());
 
+    
+    // Creates a new session if mySession does not exist yet, otherwise use the
+    // Session with name mySession.
+    /*
     $pSession = $client->createSession('mySession');
 
-    $scripts = $client->listScripts();
+    $phoenixExecution = $pSession->executeCode("print(rnorm(100))");
 
-    foreach ($scripts as $name => $id)
-    {
-        echo $name . ', ' . $id . '<br>';
-    }
- 
-    $phoenixExecution = $pSession->executeScript('jorgen', null, '
+    $phoenixExecution = $pSession->executeScript('average', null, '
         {
-            "bla": {
+            "numbers": {
                 "type" : "vector",
                 "value" : [4,5,6]
             }
         }
-    ', 'gemiddeld');
+    ', 'average');
     
-    $robjects = $phoenixExecution->getRObjects();
-    echo $robjects['gemiddeld']['value'] . '<br>';
+    $phoenixExecution = $pSession->executeCode(
+        "myVector <- rnorm(100); png(\"myplot.png\"); plot(myVector); dev.off();",
+        "myVector",
+        "myplot.png"
+    );
+
+    var_dump($pSession->getHistory());
+    */
     
-    $phoenixExecution = $pSession->executeCode('png("myPlot.png"); x <- runif(20); y <- runif( 20); plot(x,y); dev.off();', 'x, y', 'myPlot.png');
-    echo '<img src="' . $phoenixExecution->getFiles()->get('myPlot.png') . '">';
     
+    //var_dump($client->getObjectRepository()->listObjects());
+    echo "<plaintext>";
+    //var_dump($client->getProjectRepository()->getProjects());
+    
+    $pSession = $client->createSession('mySession');
+    
+    $phoenixExecution = $pSession->executeCode("n <- rnorm(100)");
+    
+    var_dump($pSession->getObjectManager()->get(new RObject("n")));
+
+    var_dump($pSession->getObjectManager()->delete(new RObject("n")));
+
+    var_dump($pSession->getObjectManager()->get(new RObject("n")));
+    
+    /*
+    var_dump($client->getObjectRepository()->getObjects());
+    die();
+    
+    $pSession = $client->loadProject(new PhoenixProject("PROJ-2679b218-b014-469f-a8ec-b3feead67922"));
+    
+    $phoenixExecution = $pSession->executeCode("print(rnorm(100))");
+    
+    var_dump($pSession->getHistory());
+    */
 } catch (PhoenixUnauthorizedException $e) {
     echo $e->getMessage();
 } catch (PhoenixNotFoundException $e) {

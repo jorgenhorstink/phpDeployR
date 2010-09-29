@@ -1,0 +1,32 @@
++ /r/session/create
++ /r/session/close
++ /r/session/ping
++ /r/session/execute/code
++ /r/session/execute/script
++ /r/session/output
++ /r/session/history
++ /r/session/workspace/save
++ /r/session/project/save
+
++ /r/session/object/list
++ /r/session/object/get
++ /r/session/object/save
++ /r/session/object/delete
++ /r/session/object/load
+
++ /r/repository/object/list
++ /r/repository/object/delete
+
+  /r/file/upload
+
++ /r/project/list
++ /r/project/load
++ /r/project/delete
+
++ /r/user/login
++ /r/user/logout
++ /r/user/whoami
++ /r/user/autosave
+
++ /r/script/list
++ /r/script/execute

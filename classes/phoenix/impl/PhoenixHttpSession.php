@@ -4,7 +4,7 @@ require_once PHOENIX_DIRECTORY . '/PhoenixSession.php';
 require_once PHOENIX_DIRECTORY . '/responseParser/PhoenixSessionResponseParser.php';
 require_once PHOENIX_DIRECTORY . '/transport/http/PhoenixHttpTransport.php';
 
-class PhoenixHttpSession extends PhoenixSession
+class PhoenixHttpSession implements PhoenixSession
 {
     protected $cookieId;
     protected $outputFormat;
@@ -21,12 +21,32 @@ class PhoenixHttpSession extends PhoenixSession
         $this->responseParser = PhoenixSessionResponseParser::get($outputFormat);
     }
     
+    public static function create($cookieId, $serverUrl, $outputFormat)
+    {
+        $header  = "Content-Type: application/x-www-form-urlencoded; charset=utf-8\n";
+        $header .= "Cookie: JSESSIONID=" . $cookieId;
+        
+        $content  = "format=" . ($outputFormat == PhoenixClient::OUTPUT_FORMAT_JSON ? "json" : "xml"); 
+
+        $sessionId = PhoenixSessionResponseParser::get($outputFormat)->parseCreateSession(
+            PhoenixHttpTransport::getInstance()->send(
+                $serverUrl . '/r/session/create',
+                'POST',
+                $header,
+                $content
+            )
+        );
+        
+        return new PhoenixHttpSession($sessionId, $cookieId, $serverUrl, $outputFormat);
+    }
+    
     public function getId()
     {
         return $this->sessionId;
     }
 
-    public function close() {
+    public function close() 
+    {
         return $this->responseParser->parseClose(
             PhoenixHttpTransport::getInstance()->send(
                 $this->serverUrl . '/r/session/close',
@@ -37,9 +57,8 @@ class PhoenixHttpSession extends PhoenixSession
         );
     }
 
-    public function executeCode($code, $rObjects = null, $files = null) {
-        //$content = $this->getDefaultContent();
- 
+    public function executeCode($code, $rObjects = null, $files = null) 
+    {
         $content  = "format=json&"; 
         $content .= "session=" . urlencode($this->sessionId);
         
@@ -49,8 +68,9 @@ class PhoenixHttpSession extends PhoenixSession
         if ($files != null) {
             $content .= "&files=" . urlencode($files);   
         }
-        $content .= "&code=" . urlencode($code);
         
+        $content .= "&code=" . urlencode($code);
+
         return $this->responseParser->parseExecuteCode(
             PhoenixHttpTransport::getInstance()->send(
                 $this->serverUrl . '/r/session/execute/code',
@@ -61,12 +81,13 @@ class PhoenixHttpSession extends PhoenixSession
         );
     }
         
-    public function executeScript($rscript, $preload = null, $inputs = null, $robjects = null, $files = null, $saveWorkspace = null) {
+    public function executeScript(PhoenixScript $script, $preload = null, $inputs = null, $robjects = null, $files = null, $saveWorkspace = null) 
+    {
  
         $content  = "format=json&"; 
-        $content .= "session=" . urlencode($this->sessionId);
+        $content .= "session=" . urlencode($this->sessionId) . '&';
+        $content .= "rscript=" . urlencode($script->getId());
         
-        $content .= "&rscript=" . urlencode($rscript);
         if ($preload != null) {
             $content .= "&preload=" . urlencode($preload);
         }
@@ -81,7 +102,8 @@ class PhoenixHttpSession extends PhoenixSession
         }
         if ($saveWorkspace != null) {
             $content .= "&saveworkspace=" . ($saveWorkspace ? "true" : "false");   
-        }        
+        }     
+           
         return $this->responseParser->parseExecuteScript(
             PhoenixHttpTransport::getInstance()->send(
                 $this->serverUrl . '/r/session/execute/script',
@@ -92,7 +114,8 @@ class PhoenixHttpSession extends PhoenixSession
         );
     }
     
-    public function ping() {        
+    public function ping() 
+    {        
         return $this->responseParser->parsePing(
             PhoenixHttpTransport::getInstance()->send(
                 $this->serverUrl . '/r/session/ping',
@@ -103,28 +126,87 @@ class PhoenixHttpSession extends PhoenixSession
         );
     }
     
+    public function getOutput()
+    {
+        return $this->responseParser->parseGetOutput(
+            PhoenixHttpTransport::getInstance()->send(
+                $this->serverUrl . '/r/session/output',
+                'POST',
+                $this->getHeader(),
+                $this->getDefaultContent()
+            )
+        );
+    }
     
-    public function saveProject($project) {}
-    
-    public function saveWorkspace() {}
+    public function getHistory()
+    {
+        return $this->responseParser->parseGetHistory(
+            PhoenixHttpTransport::getInstance()->send(
+                $this->serverUrl . '/r/session/history',
+                'POST',
+                $this->getHeader(),
+                $this->getDefaultContent()
+            )
+        );
+    }
 
+    public function saveProject($descr) 
+    {
+        $content = $this->getDefaultContent();
+        $content .= "&descr=" . urlencode($descr);
+        
+        return $this->responseParser->parseSaveProject(
+            PhoenixHttpTransport::getInstance()->send(
+                $this->serverUrl . '/r/session/project/save',
+                'POST',
+                $this->getHeader(),
+                $content
+            ),
+            $descr
+        );
+    }
+    
+    public function saveWorkspace($descr) 
+    {
+        $content = $this->getDefaultContent();
+        $content .= "&descr=" . urlencode($descr);
+        
+        return $this->responseParser->parseSaveWorkspace(
+            PhoenixHttpTransport::getInstance()->send(
+                $this->serverUrl . '/r/session/workspace/save',
+                'POST',
+                $this->getHeader(),
+                $content
+            ),
+            $descr
+        );
+    }
+    
+    public function getObjectManager()
+    {
+        return new PhoenixHttpObjectManager($this, $this->serverUrl, $this->cookieId, $this->outputFormat);   
+    }    
+    
+    
+    /*
     public function getObject($name) {
         $content = $this->getDefaultContent();
         
         $content .= "&name=" . urlencode($name);
         
-        return $this->responseParser->parseExecuteScript(
+        return $this->responseParser->parseGetObject(
             PhoenixHttpTransport::getInstance()->send(
                 $this->serverUrl . '/r/session/object/get',
                 'POST',
                 $this->getHeader(),
                 $content
-            )
+            ),
+            $name
         );
     }
     
     public function listObjects() {
-        return $this->responseParser->parseExecuteScript(
+        return $this->responseParser->parseListObjects(
             PhoenixHttpTransport::getInstance()->send(
                 $this->serverUrl . '/r/session/object/list',
                 'POST',
@@ -138,7 +220,7 @@ class PhoenixHttpSession extends PhoenixSession
         $content = $this->getDefaultContent();
         $content .= "&id=" . urlencode($id);
         
-        return $this->responseParser->parseExecuteScript(
+        return $this->responseParser->parseLoadStoredObjects(
             PhoenixHttpTransport::getInstance()->send(
                 $this->serverUrl . '/r/session/object/stored/load',
                 'POST',
@@ -163,12 +245,13 @@ class PhoenixHttpSession extends PhoenixSession
             )
         );
     }
+    */
 
     private function getHeader()
     {
         $header  = "Content-Type: application/x-www-form-urlencoded; charset=utf-8\n";
         $header .= "Cookie: JSESSIONID=" . $this->cookieId;
-        
+
         return $header;
     }
     

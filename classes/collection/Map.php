@@ -2,8 +2,8 @@
 
 /**
  * 
- * @author Henk Erik van der Hoek (mail@henkerikvanderhoek.nl)
  * @author Jorgen Horstink (mail@jorgenhorstink.nl)
+ * @author Henk Erik van der Hoek (mail@henkerikvanderhoek.nl)
  *
  * @version 1.0
  */

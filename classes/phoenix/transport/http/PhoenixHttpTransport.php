@@ -29,7 +29,7 @@ class PhoenixHttpTransport
                                         'header'=> $header,
                                         'content' => $content));
     
-        $content = @file_get_contents($url, 0, stream_context_create($context));         
+        $content = file_get_contents($url, 0, stream_context_create($context));         
         $httpCode = $http_response_header[0];
      
         if (preg_match('/400/', $httpCode)) {

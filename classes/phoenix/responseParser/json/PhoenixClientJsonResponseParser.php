@@ -4,62 +4,65 @@ require_once PHOENIX_DIRECTORY . '/exception/PhoenixUnauthorizedException.php';
 require_once PHOENIX_DIRECTORY . '/PhoenixIdentity.php';
 
 class PhoenixClientJsonResponseParser extends PhoenixClientResponseParser
-{
-    public function parseListScripts($json) {
+{    
+    public function parseLoadProject($json) 
+    {
         $decoded = json_decode($json, true);
-   
-        if ($decoded['phoenix']['response']['success'] != 1) {
-            throw new PhoenixResponseException('client - listScripts - failed...');   
-        }
         
-        $map = new ArrayMap();
-        foreach ($decoded['phoenix']['response']['pobjects'] as $name => $script) {
-            $map->put($name, $script['value']);
+        if ($this->isSuccess($decoded)) {
+            return $decoded['deployr']['response']['session'];
+        } else {
+            throw new PhoenixResponseException('client - load project - failed...')   ;
         }
-        
-        return $map;
     }
 
-    public function parseLogin($json) {
+    public function parseLogin($json) 
+    {
         $decoded = json_decode($json, true);
-   
-        if ($decoded['phoenix']['response']['success'] != 1) {
+
+        if (!$this->isSuccess($decoded)) {
             throw new PhoenixResponseException('login - failed...');   
         }
         
-        return $decoded['phoenix']['response']['cookie'];   
+        return $decoded['deployr']['response']['cookie'];   
     }
     
-    public function parseLogout($json) {
+    public function parseLogout($json) 
+    {
         $decoded = json_decode($json, true);
    
-        if ($decoded['phoenix']['response']['success'] != 1) {
+        if (!$this->isSuccess($decoded)) {
             throw new PhoenixResponseException('logout - failed...');   
         }
     }
     
-    public function parseWhoami($json) {
+    public function parseWhoami($json) 
+    {
         $decoded = json_decode($json, true);
    
-        if ($decoded['phoenix']['response']['success'] != 1) {
+        if (!$this->isSuccess($decoded)) {
             throw new PhoenixResponseException('whoami - failed...');   
         }
 
         return new PhoenixIdentity(
-            $decoded['phoenix']['response']['identity']['username'],
-            $decoded['phoenix']['response']['identity']['displayname']
+            $decoded['deployr']['response']['identity']['username'],
+            $decoded['deployr']['response']['identity']['displayname']
         );
     }
     
-    public function parseCreateSession($json)
+    public function parseAutosave($json) 
     {
         $decoded = json_decode($json, true);
-        
-        if ($decoded['phoenix']['response']['success'] != 1) {
-            throw new PhoenixResponseException('client - createSession - failed...');   
+        if ($this->isSuccess($decoded)) {
+            return true;   
+        } else {
+            return false;
         }
-        
-        return $decoded['phoenix']['response']['session'];
+    }
+    
+    protected function isSuccess($decoded)
+    {
+        return $decoded['deployr']['response']['success'] == true;  
     }
 }
 

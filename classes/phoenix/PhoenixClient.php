@@ -1,6 +1,6 @@
 <?php
 
-require_once PHOENIX_DIRECTORY . '/PhoenixHttpClient.php';
+require_once PHOENIX_DIRECTORY . '/impl/PhoenixHttpClient.php';
 
 abstract class PhoenixClient
 {
@@ -16,23 +16,26 @@ abstract class PhoenixClient
         return new PhoenixHttpClient($url, $session, $outputFormat);
     }
 
-    public function getFormat()
+    public public function getFormat()
     {
         return $this->outputFormat;
     }
     
-    abstract function isAuthenticated();
+    abstract public function isAuthenticated();
 
-    abstract function login(PhoenixAuthentication $authentication);
+    abstract public function login(PhoenixAuthentication $authentication);
 
-    abstract function logout();
+    abstract public function logout();
 
-    abstract function whoAmI();
+    abstract public function whoAmI();
 
-    abstract function createSession($name);
+    abstract public function createSession($name);
 
-    abstract function loadProject(PhoenixProject $project);
+    abstract public function loadProject(PhoenixProject $project);
 
+    abstract protected function getHeader();
+    
+    abstract protected function getDefaultContent();
 }
 
 ?>
