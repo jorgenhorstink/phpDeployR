@@ -1,6 +1,6 @@
 == Introduction ==
 
-phpPhoenix is a PHP Client Library for communicating with a Revolution Phoenix R Server.
+phpDeployR is a PHP Client Library for communicating with a Revolution DeployR R Server.
 At the moment the library is still very basic and probably unstable. Documentation is not
 available yet.
 
